@@ -41,6 +41,7 @@ const LEVEL_PLAYLIST_REGEX_SLOW = new RegExp([
   /#EXT-X-(VERSION):(\d+)/.source,
   /#EXT-X-(MAP):(.+)/.source,
   /#EXT-X-(SERVER-CONTROL):(.+)/.source,
+  /#EXT-X-(PART-INF):(.+)/.source,
   /(#)([^:]*):(.*)/.source,
   /(#)(.*)(?:.*)\r?\n?/.source
 ].join('|'));
@@ -370,6 +371,10 @@ export default class M3U8Parser {
           level.partHoldBack = serverControlAttrs.optionalFloat('PART-HOLD-BACK', 0);
           level.holdBack = serverControlAttrs.optionalFloat('HOLD-BACK', 0);
           break;
+        }
+        case 'PART-INF': {
+          const partInfAttrs = new AttrList(value1);
+          level.partTarget = partInfAttrs.decimalFloatingPoint('PART-TARGET');
         }
         default:
           logger.warn(`line parsed but not handled: ${result}`);
