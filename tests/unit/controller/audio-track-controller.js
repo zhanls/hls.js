@@ -269,12 +269,12 @@ describe('AudioTrackController', function () {
       });
 
       // fatal network error clears interval
-      expect(audioTrackController.timer).to.equal(null);
+      expect(audioTrackController.timer).to.equal(-1);
     });
 
     it('should blacklist current track on fatal network error, and find a backup track (fallback mechanism)', function () {
       const currentTrackId = 4;
-      audioTrackController._trackId = currentTrackId;
+      audioTrackController.trackId = currentTrackId;
       audioTrackController.tracks = tracks;
       audioTrackController.onError(Events.ERROR, {
         type: Hls.ErrorTypes.MEDIA_ERROR,

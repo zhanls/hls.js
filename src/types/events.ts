@@ -74,6 +74,7 @@ export interface ManifestLoadedData {
 export interface ManifestParsedData {
   levels: Level[]
   audioTracks: MediaPlaylist[]
+  subtitleTracks: MediaPlaylist[]
   firstLevel: number
   stats: LoaderStats
   audio: boolean
