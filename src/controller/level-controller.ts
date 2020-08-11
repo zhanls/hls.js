@@ -308,10 +308,12 @@ export default class LevelController extends BasePlaylistController {
     case ErrorDetails.LEVEL_LOAD_TIMEOUT:
       // Do not perform level switch if an error occurred using delivery directives
       // Attempt to reload level without directives first
-      if (data.context.deliveryDirectives) {
-        levelSwitch = false;
+      if (data.context) {
+        if (data.context.deliveryDirectives) {
+          levelSwitch = false;
+        }
+        levelIndex = data.context.level;
       }
-      levelIndex = data.context.level;
       levelError = true;
       break;
     case ErrorDetails.REMUX_ALLOC_ERROR:
@@ -420,6 +422,7 @@ export default class LevelController extends BasePlaylistController {
       logger.warn('[level-controller]: Invalid level index:', level);
       return;
     }
+    logger.log(`[level-controller]: level ${level} loaded [${details.startSN}-${details.endSN}]`);
 
     // only process level loaded events matching with expected level
     if (level === this.currentLevelIndex) {
@@ -428,7 +431,7 @@ export default class LevelController extends BasePlaylistController {
         curLevel.loadError = 0;
         this.levelRetryCount = 0;
       }
-      this.playlistLoaded(level, details, curLevel.details, data.stats);
+      this.playlistLoaded(level, data, curLevel.details);
     }
   }
 

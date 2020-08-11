@@ -131,10 +131,10 @@ class SubtitleTrackController extends BasePlaylistController {
 
     const curDetails = currentTrack.details;
     currentTrack.details = data.details;
-    logger.log(`[subtitle-track-controller]: subtitle track ${id} loaded [${details.startSN},${details.endSN}]`);
+    logger.log(`[subtitle-track-controller]: subtitle track ${id} loaded [${details.startSN}-${details.endSN}]`);
 
     if (id === this.trackId) {
-      this.playlistLoaded(id, details, curDetails, data.stats);
+      this.playlistLoaded(id, data, curDetails);
     }
   }
 
@@ -157,17 +157,16 @@ class SubtitleTrackController extends BasePlaylistController {
   }
 
   protected loadPlaylist (hlsUrlParameters?: HlsUrlParameters): void {
-    const { trackId, tracks } = this;
-    const currentTrack = tracks[trackId];
-    if (!this.canLoad || trackId < 0 || !currentTrack || (currentTrack.details && !currentTrack.details.live)) {
-      return;
+    const currentTrack = this.tracks[this.trackId];
+    if (this.shouldLoadTrack(currentTrack)) {
+      const { url, id } = currentTrack;
+      logger.log(`[subtitle-track-controller]: Loading subtitle playlist for id ${id}`);
+      this.hls.trigger(Events.SUBTITLE_TRACK_LOADING, {
+        url,
+        id,
+        deliveryDirectives: hlsUrlParameters || null
+      });
     }
-    logger.log(`[subtitle-track-controller]: Loading subtitle track ${trackId}`);
-    this.hls.trigger(Events.SUBTITLE_TRACK_LOADING, {
-      url: currentTrack.url,
-      id: trackId,
-      deliveryDirectives: hlsUrlParameters || null
-    });
   }
 
   /**

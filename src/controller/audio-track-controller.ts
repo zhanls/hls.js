@@ -132,10 +132,10 @@ class AudioTrackController extends BasePlaylistController {
 
     const curDetails = currentTrack.details;
     currentTrack.details = data.details;
-    logger.log(`[audio-track-controller]: audioTrack ${id} loaded [${details.startSN},${details.endSN}]`);
+    logger.log(`[audio-track-controller]: audioTrack ${id} loaded [${details.startSN}-${details.endSN}]`);
 
     if (id === this.trackId) {
-      this.playlistLoaded(id, details, curDetails, data.stats);
+      this.playlistLoaded(id, data, curDetails);
     }
   }
 
@@ -193,7 +193,7 @@ class AudioTrackController extends BasePlaylistController {
       return;
     }
 
-    logger.warn('[audio-track-controller]: Network failure on audio-track id:', data.context.id);
+    logger.warn('[audio-track-controller]: Network failure on audio-track id:', data.context?.id);
     this._handleLoadError();
   }
 
@@ -294,15 +294,9 @@ class AudioTrackController extends BasePlaylistController {
     }
   }
 
-  private _needsTrackLoading (audioTrack: MediaPlaylist): boolean {
-    const { details, url } = audioTrack;
-
-    return !!url && (!details || details.live);
-  }
-
   protected loadPlaylist (hlsUrlParameters?: HlsUrlParameters): void {
     const audioTrack = this.tracks[this.trackId];
-    if (this.canLoad && audioTrack && this._needsTrackLoading(audioTrack)) {
+    if (this.shouldLoadTrack(audioTrack)) {
       const { url, id } = audioTrack;
       // track not retrieved yet, or live playlist we need to (re)load it
       logger.log(`[audio-track-controller]: loading audio-track playlist for id: ${id}`);

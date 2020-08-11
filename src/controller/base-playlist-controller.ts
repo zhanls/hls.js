@@ -1,10 +1,11 @@
 import Hls from '../hls';
 import { NetworkComponentAPI } from '../types/component-api';
 import { HlsUrlParameters } from '../types/level';
-import type LevelDetails from '../loader/level-details';
-import { logger } from '../utils/logger';
 import { computeReloadInterval } from './level-helper';
-import { LoaderStats } from '../types/loader';
+import { logger } from '../utils/logger';
+import type LevelDetails from '../loader/level-details';
+import type { MediaPlaylist } from '../types/media-playlist';
+import type { AudioTrackLoadedData, LevelLoadedData, TrackLoadedData } from '../types/events';
 
 export default class BasePlaylistController implements NetworkComponentAPI {
   protected hls: Hls;
@@ -36,9 +37,18 @@ export default class BasePlaylistController implements NetworkComponentAPI {
 
   protected loadPlaylist (hlsUrlParameters?: HlsUrlParameters): void {}
 
-  protected playlistLoaded (index: number, details: LevelDetails, previousDetails: LevelDetails | undefined, stats: LoaderStats) {
+  protected shouldLoadTrack (track: MediaPlaylist): boolean {
+    return this.canLoad && !!track?.url && (!track.details || track.details.live);
+  }
+
+  protected playlistLoaded (index: number, data: LevelLoadedData | AudioTrackLoadedData | TrackLoadedData, previousDetails: LevelDetails | undefined) {
+    const { details, stats, deliveryDirectives } = data;
+
     // if current playlist is a live playlist, arm a timer to reload it
     if (details.live) {
+      if (deliveryDirectives) {
+        console.assert(deliveryDirectives.msn === details.endSN, `blocking reload result ${details.endSN}, requested ${deliveryDirectives.msn}`);
+      }
       details.reloaded(previousDetails);
       if (previousDetails) {
         logger.log(`[${this.constructor?.name}] live playlist ${index} ${details.advanced ? 'REFRESHED' : 'MISSED'}`);
